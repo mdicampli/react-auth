@@ -52,7 +52,10 @@ const AuthProvider = ({ children }) => {
 	const loginUserOnStartup = () => {
 		if (cookies["auth_token"]) {
 			fetcher(`${BACKEND_URL}/user`, {
-				method: 'GET'
+				method: 'GET',
+				headers: {
+					Authorization: `Bearer ${cookies["auth_token"]}`,
+				}
 			})
 				.then((response) => response.json())
 				.then((data) => {

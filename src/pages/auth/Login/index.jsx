@@ -26,8 +26,13 @@ const Login = () => {
 		})
 			.then((response) => response.json())
 			.then((data) => {
-				setAsLogged(data.user, data["access_token"])}
-				)
+				if(data.status !== 'error') {
+					setAsLogged(data.user, data["access_token"])
+				} else {
+					setError('email')
+					setError('password', {type: 'custom', message: data.message})
+				}
+			})
 			.catch((err) => {
 				console.log(err);
 			});
@@ -57,11 +62,6 @@ const Login = () => {
 								: "bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
 						} block w-full p-2.5 text-sm rounded-lg`}
 					/>
-					{errors.email && (
-						<p className="mt-2 text-sm text-red-600 dark:text-red-500">
-							{errors.email.message}
-						</p>
-					)}
 				</div>
 
 				<div className="mb-6">
@@ -85,9 +85,11 @@ const Login = () => {
 						} block w-full p-2.5 text-sm rounded-lg`}
 					/>
 					{errors.password && (
-						<p className="mt-2 text-sm text-red-600 dark:text-red-500">
-							{errors.password.message}
-						</p>
+						<div className="bg-red-500/10 rounded-xl p-4 mt-6">
+							<p className="text-sm text-red-600 dark:text-red-500">
+								{errors.password.message}
+							</p>
+						</div>
 					)}
 				</div>
 				<span className="flex gap-2 my-4">Not registered yet? <Link className="text-blue-500" to="/register">Register Now</Link></span>

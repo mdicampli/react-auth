@@ -38,18 +38,13 @@ const Register = () => {
 				if(!data.errors) {
 					setAsLogged(data.user, data["access_token"])
 				} else {
-					if(data.errors.name) {
-						setError('name', { type: "custom", message: data.errors.name.map(error => error + '<br/>').join()})
-					}
-					if(data.errors.email) {
-						console.log(data.errors.email);
-						setError('email', { type: "custom", message: data.errors.email.map(error => error + '<br/>').join()})
-					}
-					if(data.errors.password) {
-						setError('password', {
-							types: getErrorTypes(data.errors.password)
-						})
-					}
+					Object.keys(data.errors).forEach(field => {
+						if(data.errors[field]) {
+							setError(field, {
+								types: getErrorTypes(data.errors[field])
+							})	
+						}
+					})
 				}
 			})
 			.catch((err) => {
@@ -81,11 +76,7 @@ const Register = () => {
 								: "bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
 						} block w-full p-2.5 text-sm rounded-lg`}
 					/>
-					{errors.name && (
-						<p className="mt-2 text-sm text-red-600 dark:text-red-500">
-							{errors.name.message}
-						</p>
-					)}
+					<FieldError errors={errors} field="name" />
 				</div>
 				<div className="mb-3">
 					<label
@@ -105,11 +96,7 @@ const Register = () => {
 								: "bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
 						} block w-full p-2.5 text-sm rounded-lg`}
 					/>
-					{errors.email && (
-						<p className="mt-2 text-sm text-red-600 dark:text-red-500">
-							{errors.email.message}
-						</p>
-					)}
+					<FieldError errors={errors} field="email" />
 				</div>
 
 				<div className="mb-3">
@@ -132,18 +119,13 @@ const Register = () => {
 								: "bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
 						} block w-full p-2.5 text-sm rounded-lg`}
 					/>
-					{/* {errors.password && (
-						<p className="mt-2 text-sm text-red-600 dark:text-red-500">
-							{errors.password.message}
-						</p>
-					)} */}
 				</div>
 
 				<div className="mb-6">
 					<label
 						htmlFor="password_confirmation"
 						className={`block mb-2 text-sm font-medium ${
-							errors.password_confirmation ? "text-red-700" : "text-gray-900"
+							errors.password ? "text-red-700" : "text-gray-900"
 						}`}
 					>
 						Confirm password
@@ -159,14 +141,10 @@ const Register = () => {
 								: "bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500"
 						} block w-full p-2.5 text-sm rounded-lg`}
 					/>
-					{errors.password && (
-						<p className="mt-2 text-sm text-red-600 dark:text-red-500">
-							{errors.password.message}
-						</p>
-					)}
+					<FieldError errors={errors} field="password" />
 				</div>
 
-				<span className="flex gap-2 my-4">Already have an account? <Link className="text-blue-500" to="/register">Login</Link></span>
+				<span className="flex gap-2 my-4">Already have an account? <Link className="text-blue-500" to="/login">Login</Link></span>
 
 				<button
 					type="submit"
@@ -180,3 +158,18 @@ const Register = () => {
 };
 
 export default Register;
+
+const FieldError = ({errors, field}) => {
+	return errors[field] && (
+		errors[field].types ? 
+		Object.values(errors[field].types).map((error, i) => (
+			<p key={i} className="mt-2 text-sm text-red-600 dark:text-red-500">
+				{error}
+			</p>
+		))
+		:
+		<p className="mt-2 text-sm text-red-600 dark:text-red-500">
+			{errors[field].message}
+		</p>
+	)
+}

@@ -20,7 +20,10 @@ function App() {
 						<span className="self-center text-2xl font-semibold whitespace-nowrap">ReactAuth</span>
 					</a>
 					<div className="flex items-center">
-						<button onClick={setLogout} className="text-sm  text-blue-600 hover:underline">Logout</button>
+						{
+							userData.token && 
+							<button onClick={setLogout} className="text-sm  text-blue-600 hover:underline">Logout</button>
+						}
 					</div>
 				</div>
 			</nav>
