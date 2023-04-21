@@ -1,5 +1,6 @@
 import { useForm } from "react-hook-form";
 import { useAuth } from "../../../context/AuthProvider";
+import { Link } from "react-router-dom";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -14,27 +15,26 @@ const Login = () => {
 		formState: { errors },
 	} = useForm({ mode: "all" });
 
-	const onSubmit = (data) => {
+	const onSubmit = (formData) => {
 		fetcher(`${BACKEND_URL}/login`, {
 			method: "POST",
 			headers: {
 				"Content-type": "application/json",
 				Accept: "application/json",
 			},
-			body: JSON.stringify({
-				email: "mario.rossi@outlook.it",
-				password: "20111996",
-			}),
+			body: JSON.stringify(formData),
 		})
 			.then((response) => response.json())
-			.then((data) => setAsLogged(data.user, data["access_token"]))
+			.then((data) => {
+				setAsLogged(data.user, data["access_token"])}
+				)
 			.catch((err) => {
 				console.log(err);
 			});
 	};
 
 	return (
-		<div className="max-w-xl p-12 bg-gray-100 rounded-xl w-full flex flex-col">
+		<div className="max-w-xl p-6 md:p-12 bg-gray-100 rounded-xl w-full flex flex-col">
 			<h1 className="text-3xl font-bold text-gray-900 text-center mb-4">
 				Login
 			</h1>
@@ -90,6 +90,7 @@ const Login = () => {
 						</p>
 					)}
 				</div>
+				<span className="flex gap-2 my-4">Not registered yet? <Link className="text-blue-500" to="/register">Register Now</Link></span>
 
 				<button
 					type="submit"

@@ -1,5 +1,5 @@
 import { createContext, useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -11,7 +11,8 @@ export const useAuth = () => {
 };
 
 const AuthProvider = ({ children }) => {
-	let navigate = useNavigate();
+	const navigate = useNavigate();
+	const location = useLocation();
 
 	const [userData, setUserData] = useState({
 		token: "",
@@ -49,16 +50,13 @@ const AuthProvider = ({ children }) => {
 	};
 
 	const loginUserOnStartup = () => {
-		console.log(cookies);
 		if (cookies["auth_token"]) {
-			fetch(`${BACKEND_URL}/api/user`, {
-				headers: {
-					Authorization: `Bearer ${cookies["auth_token"]}`,
-				},
+			fetcher(`${BACKEND_URL}/user`, {
+				method: 'GET'
 			})
 				.then((response) => response.json())
 				.then((data) => {
-					setUserData({ token: cookies["auth_token"], user: data.user });
+					setUserData({ token: cookies["auth_token"], user: data });
 					navigate("/");
 				})
 				.catch((error) => {
@@ -68,6 +66,9 @@ const AuthProvider = ({ children }) => {
 				});
 		} else {
 			setUserData({ token: "", user: null });
+			if(location.pathname === '/register') {
+				return;
+			}
 			navigate("/login");
 		}
 	};
