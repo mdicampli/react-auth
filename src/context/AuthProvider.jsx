@@ -2,9 +2,15 @@ import { createContext, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 
-export const AuthContext = createContext(null);
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+export const AuthContext = createContext({});
 
 export const useAuth = () => {
+	return useContext(AuthContext);
+};
+
+const AuthProvider = ({ children }) => {
 	let navigate = useNavigate();
 
 	const [userData, setUserData] = useState({
@@ -13,12 +19,6 @@ export const useAuth = () => {
 	});
 
 	const [cookies, setCookie, removeCookie] = useCookies(["auth_token"]);
-
-	const { setAuthData } = useContext(AuthContext);
-
-	useEffect(() => {
-		setAuthData(userData);
-	}, [userData.token]);
 
 	const getAuthCookieExpiration = () => {
 		let date = new Date();
@@ -33,7 +33,7 @@ export const useAuth = () => {
 			sameSite: "lax",
 			httpOnly: false,
 		});
-		setUserData({ token: true, user });
+		setUserData({ token: token, user });
 		navigate("/");
 	};
 
@@ -44,37 +44,65 @@ export const useAuth = () => {
 			sameSite: "lax",
 			httpOnly: false,
 		});
-		setUserData({ token: false, user: null });
+		setUserData({ token: "", user: null });
 		navigate("/login");
 	};
 
 	const loginUserOnStartup = () => {
+		console.log(cookies);
 		if (cookies["auth_token"]) {
-			fetch("/api/user", {
+			fetch(`${BACKEND_URL}/api/user`, {
 				headers: {
 					Authorization: `Bearer ${cookies["auth_token"]}`,
 				},
 			})
 				.then((response) => response.json())
 				.then((data) => {
-					setUserData({ token: true, user: data.user });
+					setUserData({ token: cookies["auth_token"], user: data.user });
 					navigate("/");
 				})
 				.catch((error) => {
 					console.log(error);
-					setUserData({ token: false, user: null });
+					setUserData({ token: "", user: null });
 					setLogout();
 				});
 		} else {
-			setUserData({ token: false, user: null });
+			setUserData({ token: "", user: null });
 			navigate("/login");
 		}
 	};
 
-	return {
-		userData,
-		setAsLogged,
-		setLogout,
-		loginUserOnStartup,
+	function updateOptions(options) {
+		const update = {
+			...options,
+			headers: { ...options.headers, Accept: "application/json" },
+		};
+		if (userData.token) {
+			update.headers = {
+				...update.headers,
+				Authorization: `Bearer ${userData.token}`,
+			};
+		}
+		return update;
+	}
+
+	const fetcher = (url, options) => {
+		return fetch(url, updateOptions(options));
 	};
+
+	return (
+		<AuthContext.Provider
+			value={{
+				userData,
+				setAsLogged,
+				setLogout,
+				loginUserOnStartup,
+				fetcher,
+			}}
+		>
+			{children}
+		</AuthContext.Provider>
+	);
 };
+
+export default AuthProvider;

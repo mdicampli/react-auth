@@ -1,21 +1,24 @@
-import { AuthContext, useAuth } from "./context/AuthContext";
+import AuthProvider, { useAuth } from "./context/AuthProvider";
+import { Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import { useEffect, useContext } from "react";
 
 function App() {
-	const { userData } = useAuth();
-	const [authData, setAuthData] = useState({
-		token: userData.token,
-		user: userData.user,
-	});
+	const { userData, loginUserOnStartup } = useAuth();
+
+	useEffect(() => {
+		loginUserOnStartup();
+	}, []);
 
 	return (
-		<div className="App">
-			<AuthContext.Provider value={{ authData, setAuthData }}>
-				<Routes>
-					<Route path="/" element={<Home />} />
-					<Route path="/login" element={<Login />} />
-					<Route path="/register" element={<Register />} />
-				</Routes>
-			</AuthContext.Provider>
+		<div className="flex items-center justify-center min-h-screen p-5">
+			<Routes>
+				<Route path="/" element={<Home />} />
+				<Route path="/login" element={<Login />} />
+				<Route path="/register" element={<Register />} />
+			</Routes>
 		</div>
 	);
 }
