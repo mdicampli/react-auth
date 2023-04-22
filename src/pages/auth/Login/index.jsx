@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Login = () => {
-	const { fetcher, setAsLogged } = useAuth();
+	const { axiosReq, setAsLogged } = useAuth();
 
 	const {
 		register,
@@ -16,21 +16,21 @@ const Login = () => {
 	} = useForm({ mode: "all" });
 
 	const onSubmit = (formData) => {
-		fetcher(`${BACKEND_URL}/login`, {
+		axiosReq({
+			url: `${BACKEND_URL}/login`,
 			method: "POST",
 			headers: {
 				"Content-type": "application/json",
 				Accept: "application/json",
 			},
-			body: JSON.stringify(formData),
+			data: formData,
 		})
-			.then((response) => response.json())
-			.then((data) => {
-				if(data.status !== 'error') {
-					setAsLogged(data.user, data["access_token"])
+			.then((response) => {
+				if(response.data.status !== 'error') {
+					setAsLogged(response.data.user, response.data["access_token"])
 				} else {
 					setError('email')
-					setError('password', {type: 'custom', message: data.message})
+					setError('password', {type: 'custom', message: response.data.message})
 				}
 			})
 			.catch((err) => {

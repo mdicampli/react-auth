@@ -1,6 +1,7 @@
 import { createContext, useState, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
+import axios from "axios";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -51,15 +52,15 @@ const AuthProvider = ({ children }) => {
 
 	const loginUserOnStartup = () => {
 		if (cookies["auth_token"]) {
-			fetcher(`${BACKEND_URL}/user`, {
+			axiosReq({
+				url: `${BACKEND_URL}/user`,
 				method: 'GET',
 				headers: {
 					Authorization: `Bearer ${cookies["auth_token"]}`,
 				}
 			})
-				.then((response) => response.json())
-				.then((data) => {
-					setUserData({ token: cookies["auth_token"], user: data });
+				.then((response) => {
+					setUserData({ token: cookies["auth_token"], user: response.data });
 					navigate("/");
 				})
 				.catch((error) => {
@@ -90,8 +91,8 @@ const AuthProvider = ({ children }) => {
 		return update;
 	}
 
-	const fetcher = (url, options) => {
-		return fetch(url, updateOptions(options));
+	const axiosReq = (options) => {
+		return axios(updateOptions(options));
 	};
 
 	return (
@@ -101,7 +102,7 @@ const AuthProvider = ({ children }) => {
 				setAsLogged,
 				setLogout,
 				loginUserOnStartup,
-				fetcher,
+				axiosReq,
 			}}
 		>
 			{children}

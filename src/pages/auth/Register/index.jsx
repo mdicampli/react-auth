@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const Register = () => {
-	const { fetcher, setAsLogged } = useAuth();
+	const { axiosReq, setAsLogged } = useAuth();
 
 	const {
 		register,
@@ -20,36 +20,35 @@ const Register = () => {
 		errors.forEach((error, i) => {
 			types[`apiError${i + 1}`] = error
 		})
-		console.log(types);
 		return types;
 	}
 
 	const onSubmit = (formData) => {
-		fetcher(`${BACKEND_URL}/register`, {
+		axiosReq({
+			url: `${BACKEND_URL}/register`,
 			method: "POST",
 			headers: {
 				"Content-type": "application/json",
 				Accept: "application/json",
 			},
-			body: JSON.stringify(formData),
+			data: formData,
 		})
-			.then((response) => response.json())
-			.then((data) => {
-				if(!data.errors) {
-					setAsLogged(data.user, data["access_token"])
+		.then((response) => {
+				if(!response.data.errors) {
+					setAsLogged(response.data.user, data["access_token"])
 				} else {
-					Object.keys(data.errors).forEach(field => {
-						if(data.errors[field]) {
+					Object.keys(response.data.errors).forEach(field => {
+						if(response.data.errors[field]) {
 							setError(field, {
-								types: getErrorTypes(data.errors[field])
+								types: getErrorTypes(response.data.errors[field])
 							})	
 						}
 					})
 				}
 			})
-			.catch((err) => {
-				console.log(err);
-			});
+		.catch((err) => {
+			console.log(err);
+		});
 	};
 
 	return (
